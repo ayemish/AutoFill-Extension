@@ -2,141 +2,154 @@ chrome.runtime.onMessage.addListener((message) => {
 
     if (message.action !== "fillForm") return;
 
-    chrome.storage.local.get("profile", ({ profile }) => {
+    chrome.storage.local.get(
+        ["profiles", "activeProfile"],
+        ({ profiles, activeProfile }) => {
 
-        if (!profile) {
-            alert("No profile saved.");
-            return;
-        }
+            if (!profiles || profiles.length === 0) {
+                alert("No profiles found.");
+                return;
+            }
 
-        const fields = document.querySelectorAll(
-            "input, textarea, select"
-        );
+            const active = profiles.find(p => p.id === activeProfile) || profiles[0];
+            const profile = active.data;
 
-        fields.forEach(input => {
+            const fields = document.querySelectorAll("input, textarea, select");
 
-            let labelText = "";
+            // Native setters for React/Vue compatibility
+            const nativeInputSetter = Object.getOwnPropertyDescriptor(
+                window.HTMLInputElement.prototype,
+                "value"
+            )?.set;
 
-            // Method 1: <label for="">
-            if (input.id) {
+            const nativeTextareaSetter = Object.getOwnPropertyDescriptor(
+                window.HTMLTextAreaElement.prototype,
+                "value"
+            )?.set;
 
-                const label = document.querySelector(
-                    `label[for="${input.id}"]`
-                );
+            fields.forEach(input => {
 
-                if (label) {
-                    labelText += " " + label.textContent;
+                let labelText = "";
+
+                // Method 1: <label for="">
+                if (input.id) {
+                    const label = document.querySelector(`label[for="${input.id}"]`);
+                    if (label) labelText += " " + label.textContent;
                 }
 
-            }
+                // Method 2: <label><input></label>
+                const parentLabel = input.closest("label");
+                if (parentLabel) {
+                    labelText += " " + parentLabel.textContent;
+                }
 
-            // Method 2: <label><input></label>
-            const parentLabel = input.closest("label");
+                // Method 3: Previous sibling
+                const previousElement = input.previousElementSibling;
+                if (previousElement) {
+                    labelText += " " + previousElement.textContent;
+                }
 
-            if (parentLabel) {
-                labelText += " " + parentLabel.textContent;
-            }
+                // Method 4: Immediate parent
+                const parent = input.parentElement;
+                if (parent) {
+                    labelText += " " + parent.textContent;
+                }
 
-            // Method 3: Previous sibling
-            const previousElement = input.previousElementSibling;
+                // Method 5: Walk up the DOM tree (generic)
+                // Helps with Google Forms, Workday, Greenhouse, Lever, etc.
+                let ancestor = input.parentElement;
 
-            if (previousElement) {
-                labelText += " " + previousElement.textContent;
-            }
+                for (let level = 0; level < 5 && ancestor; level++) {
 
-            // Method 4: Parent container
-            const parent = input.parentElement;
+                    labelText += " " + ancestor.textContent;
 
-            if (parent) {
-                labelText += " " + parent.textContent;
-            }
+                    if (ancestor.previousElementSibling) {
+                        labelText += " " + ancestor.previousElementSibling.textContent;
+                    }
 
-            const searchableText = [
+                    if (ancestor.nextElementSibling) {
+                        labelText += " " + ancestor.nextElementSibling.textContent;
+                    }
 
-                input.name,
-                input.id,
-                input.placeholder,
-                input.getAttribute("aria-label"),
-                input.getAttribute("autocomplete"),
-                input.title,
-                labelText
+                    ancestor = ancestor.parentElement;
+                }
 
-            ].join(" ");
+                const searchableText = [
+                    input.name,
+                    input.id,
+                    input.placeholder,
+                    input.getAttribute("aria-label"),
+                    input.getAttribute("autocomplete"),
+                    input.title,
+                    labelText
+                ].join(" ");
 
-            const key = findProfileKey(searchableText);
+                const key = findProfileKey(searchableText);
 
-            if (!key) return;
+                if (!key) return;
 
-            let value = profile[key];
+                let value = profile[key];
 
-            // Generate Full Name automatically
-            if (key === "fullName") {
-                value = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-            }
+                // Generate Full Name automatically
+                if (key === "fullName") {
+                    value = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+                }
 
-            if (!value) return;
+                if (!value) return;
 
-            try {
+                try {
 
-                // Handle native dropdowns
-                if (input.tagName === "SELECT") {
+                    if (input.tagName === "SELECT") {
 
-                    const normalizedValue = normalize(value);
+                        const normalizedValue = normalize(value);
+                        let matched = false;
 
-                    let matched = false;
+                        for (const option of input.options) {
 
-                    for (const option of input.options) {
+                            const optionText = normalize(option.text);
+                            const optionValue = normalize(option.value);
 
-                        const optionText = normalize(option.text);
-                        const optionValue = normalize(option.value);
+                            if (
+                                optionText.includes(normalizedValue) ||
+                                normalizedValue.includes(optionText) ||
+                                optionValue.includes(normalizedValue) ||
+                                normalizedValue.includes(optionValue)
+                            ) {
+                                input.value = option.value;
+                                matched = true;
+                                break;
+                            }
+                        }
 
-                        if (
-                            optionText.includes(normalizedValue) ||
-                            normalizedValue.includes(optionText) ||
-                            optionValue.includes(normalizedValue) ||
-                            normalizedValue.includes(optionValue)
-                        ) {
+                        if (!matched) return;
 
-                            input.value = option.value;
-                            matched = true;
-                            break;
+                    } else {
 
+                        if (input.tagName === "TEXTAREA" && nativeTextareaSetter) {
+                            nativeTextareaSetter.call(input, value);
+                        }
+                        else if (input.tagName === "INPUT" && nativeInputSetter) {
+                            nativeInputSetter.call(input, value);
+                        }
+                        else {
+                            input.value = value;
                         }
 
                     }
 
-                    if (!matched) return;
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                    input.dispatchEvent(new Event("blur", { bubbles: true }));
 
-                } else {
+                    console.log(`Filled ${key}: ${value}`);
 
-                    input.value = value;
-
+                } catch (error) {
+                    console.error("Fill Error:", error);
                 }
 
-                input.dispatchEvent(
-                    new Event("input", {
-                        bubbles: true
-                    })
-                );
+            });
 
-                input.dispatchEvent(
-                    new Event("change", {
-                        bubbles: true
-                    })
-                );
-
-                console.log(`Filled ${key}: ${value}`);
-
-            }
-
-            catch (error) {
-
-                console.error("Fill Error:", error);
-
-            }
-
-        });
-
-    });
+        }
+    );
 
 });

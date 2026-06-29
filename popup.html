@@ -9,27 +9,49 @@
 
 <h2>Job Autofill</h2>
 
-<textarea id="jsonInput">
-{
-    "firstName":"Ayemish",
-    "lastName":"Mushtaq",
-    "email":"ayemish@example.com",
-    "phone":"+923001234567",
-    "city":"Lahore",
-    "linkedin":"https://linkedin.com/in/ayemish",
-    "github":"https://github.com/ayemish"
-}
-</textarea>
+<label><b>Profile</b></label>
+
+<div class="profileRow">
+    <select id="profileSelect"></select>
+    <button id="newProfileBtn">+</button>
+</div>
 
 <br>
 
-<button id="saveBtn">
-Save Profile
-</button>
+<textarea id="jsonInput"></textarea>
 
-<button id="fillBtn">
-Fill Form
-</button>
+<br>
+
+<div class="buttonRow">
+    <button id="saveBtn">Save Profile</button>
+    <button id="fillBtn">Fill Form</button>
+    <button id="deleteProfileBtn" class="deleteBtn">Delete Profile</button>
+</div>
+
+<!-- New Profile Modal -->
+<div id="newProfileModal" class="modalBackdrop">
+    <div class="modalBox">
+
+        <h3>New Profile</h3>
+
+        <label>Profile Name</label>
+        <input type="text" id="inputProfileName" placeholder="e.g. My Job Search">
+
+        <label>Applicant Name</label>
+        <input type="text" id="inputApplicantName" placeholder="e.g. John Doe">
+
+        <label>Application Type</label>
+        <input type="text" id="inputApplicationType" placeholder="e.g. Employment">
+
+        <p id="modalError" class="modalError"></p>
+
+        <div class="modalActions">
+            <button id="modalCancelBtn">Cancel</button>
+            <button id="modalCreateBtn">Create</button>
+        </div>
+
+    </div>
+</div>
 
 <script src="popup.js"></script>
 

@@ -21,18 +21,6 @@ const aliases = {
         "lname"
     ],
 
-    fullName: [
-        "fullname",
-        "full_name",
-        "full-name",
-        "applicantname",
-        "applicant_name",
-        "candidate_name",
-        "candidatename",
-        "yourname",
-        "your_name"
-    ],
-
     email: [
         "email",
         "emailaddress",
@@ -83,14 +71,24 @@ const aliases = {
         "permanentaddress",
         "permanent_address",
         "physicaladdress",
-        "physical_address",
-        "location"
+        "physical_address"
     ],
 
     city: [
         "city",
         "town",
         "municipality"
+    ],
+
+    stateProvince: [
+        "state",
+        "province",
+        "stateprovince",
+        "state_province",
+        "region",
+        "territory",
+        "statename",
+        "state_name"
     ],
 
     country: [
@@ -178,6 +176,19 @@ const aliases = {
         "employer",
         "organization",
         "currentemployer"
+    ],
+
+    fullName: [
+        "fullname",
+        "full_name",
+        "full-name",
+        "applicantname",
+        "applicant_name",
+        "candidate_name",
+        "candidatename",
+        "yourname",
+        "your_name",
+        "name"
     ]
 
 };
@@ -192,7 +203,23 @@ function findProfileKey(text) {
 
     const normalized = normalize(text);
 
+    // ===== Give Full Name highest priority =====
+    if (
+        normalized.includes("fullname") ||
+        normalized.includes("full_name") ||
+        normalized.includes("full-name") ||
+        normalized.includes("applicantname") ||
+        normalized.includes("candidatename") ||
+        normalized.includes("yourname")
+    ) {
+        return "fullName";
+    }
+
+    // Check all other aliases
     for (const key in aliases) {
+
+        // Skip fullName because we've already handled it
+        if (key === "fullName") continue;
 
         for (const alias of aliases[key]) {
 
@@ -200,6 +227,15 @@ function findProfileKey(text) {
                 return key;
             }
 
+        }
+
+    }
+
+    // Finally check generic fullName aliases like "name"
+    for (const alias of aliases.fullName) {
+
+        if (normalized.includes(normalize(alias))) {
+            return "fullName";
         }
 
     }

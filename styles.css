@@ -1,17 +1,125 @@
-body{
-    width:380px;
-    padding:15px;
-    font-family:Arial,sans-serif;
+body {
+    width: 380px;
+    padding: 15px;
+    font-family: Arial, sans-serif;
 }
 
-textarea{
-    width:100%;
-    height:220px;
-    resize:vertical;
+.profileRow {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 10px;
 }
 
-button{
-    margin-top:10px;
-    padding:8px 15px;
-    cursor:pointer;
+#profileSelect {
+    flex: 1;
+    padding: 6px;
+}
+
+#newProfileBtn {
+    width: 40px;
+}
+
+textarea {
+    width: 100%;
+    height: 220px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+/* ── Modal ── */
+
+.modalBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modalBox {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modalBox h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+}
+
+.modalBox label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.modalBox input {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.modalActions button {
+    margin-top: 0;
+    padding: 7px 14px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.modalActions #modalCreateBtn {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.modalError {
+    color: #dc2626;
+    font-size: 12px;
+    margin: 2px 0 0;
+    min-height: 16px;
+}
+.buttonRow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.deleteBtn {
+    margin-left: auto;
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.deleteBtn:hover {
+    background-color: #a93226;
 }

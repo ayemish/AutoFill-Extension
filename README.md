@@ -1,3 +1,5 @@
+V1
+
 # Job Application Autofill Extension
 
 A lightweight Chrome/Firefox extension that autofills job application forms using a locally stored JSON profile.
@@ -42,3 +44,8 @@ A lightweight Chrome/Firefox extension that autofills job application forms usin
 - Resume upload
 - Import/Export profile
 - Better field matching
+
+V2
+
+- Added support for multiple user profiles for different application types.
+- Improved input field handling for better compatibility across various websites and dynamic forms (including Google Forms).
