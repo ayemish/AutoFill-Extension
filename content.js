@@ -49,29 +49,15 @@ chrome.runtime.onMessage.addListener((message) => {
                     labelText += " " + previousElement.textContent;
                 }
 
-                // Method 4: Immediate parent
-                const parent = input.parentElement;
-                if (parent) {
-                    labelText += " " + parent.textContent;
-                }
-
-                // Method 5: Walk up the DOM tree (generic)
-                // Helps with Google Forms, Workday, Greenhouse, Lever, etc.
-                let ancestor = input.parentElement;
-
-                for (let level = 0; level < 5 && ancestor; level++) {
-
-                    labelText += " " + ancestor.textContent;
-
-                    if (ancestor.previousElementSibling) {
-                        labelText += " " + ancestor.previousElementSibling.textContent;
-                    }
-
-                    if (ancestor.nextElementSibling) {
-                        labelText += " " + ancestor.nextElementSibling.textContent;
-                    }
-
-                    ancestor = ancestor.parentElement;
+                // NEW: aria-labelledby support
+                const labelledBy = input.getAttribute("aria-labelledby");
+                if (labelledBy) {
+                    labelledBy.split(/\s+/).forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            labelText += " " + el.textContent;
+                        }
+                    });
                 }
 
                 const searchableText = [
@@ -82,7 +68,9 @@ chrome.runtime.onMessage.addListener((message) => {
                     input.getAttribute("autocomplete"),
                     input.title,
                     labelText
-                ].join(" ");
+                ]
+                .filter(Boolean)
+                .join(" ");
 
                 const key = findProfileKey(searchableText);
 
