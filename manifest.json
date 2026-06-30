@@ -25,5 +25,15 @@
         "content.js"
       ]
     }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "libs/pdf/pdf.mjs",
+        "libs/pdf/pdf.worker.mjs"
+      ],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

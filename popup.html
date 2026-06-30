@@ -16,6 +16,12 @@
     <button id="newProfileBtn">+</button>
 </div>
 
+<div class="profileRow">
+    <input type="file" id="resumeInput" accept=".pdf,.docx" style="flex:1;">
+    <button id="parseResumeBtn">Upload Resume</button>
+</div>
+<p id="resumeStatus" class="modalError"></p>
+
 <br>
 
 <textarea id="jsonInput"></textarea>
@@ -53,7 +59,8 @@
     </div>
 </div>
 
-<script src="popup.js"></script>
+<script src="libs/mammoth/mammoth.browser.min.js"></script>
+<script src="popup.js" type="module"></script>
 
 </body>
 

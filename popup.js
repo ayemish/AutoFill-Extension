@@ -1,3 +1,7 @@
+import { extractPdfText } from "./resume/pdfReader.js";
+import { extractDocxText } from "./resume/docxReader.js";
+import { parseResume } from "./resume/parser.js";
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const jsonInput = document.getElementById("jsonInput");
@@ -312,6 +316,80 @@ document.addEventListener("DOMContentLoaded", async () => {
             action: "fillForm"
 
         });
+
+    });
+
+    // ----------------------------
+    // Resume upload + parse
+    // ----------------------------
+
+    const resumeInput = document.getElementById("resumeInput");
+    const parseResumeBtn = document.getElementById("parseResumeBtn");
+    const resumeStatus = document.getElementById("resumeStatus");
+
+    parseResumeBtn.addEventListener("click", async () => {
+
+        const file = resumeInput.files[0];
+
+        if (!file) {
+            resumeStatus.textContent = "Please choose a PDF or DOCX file first.";
+            return;
+        }
+
+        const name = file.name.toLowerCase();
+
+        resumeStatus.textContent = "Parsing resume...";
+
+        try {
+
+            let text = "";
+
+            if (name.endsWith(".pdf")) {
+                text = await extractPdfText(file);
+            }
+            else if (name.endsWith(".docx")) {
+                text = await extractDocxText(file);
+            }
+            else {
+                resumeStatus.textContent = "Unsupported file type. Use PDF or DOCX.";
+                return;
+            }
+
+            const parsed = parseResume(text);
+
+            const profile = profiles.find(
+                p => p.id === activeProfile
+            );
+
+            if (!profile) return;
+
+            // Merge: only overwrite fields the parser actually found a value for.
+            // Keys / structure of profile.data stay exactly as they were.
+            for (const key in profile.data) {
+
+                if (parsed[key]) {
+                    profile.data[key] = parsed[key];
+                }
+
+            }
+
+            jsonInput.value = JSON.stringify(
+                profile.data,
+                null,
+                4
+            );
+
+            resumeStatus.textContent =
+                "Resume parsed. Review the JSON below, then click Save Profile.";
+
+        }
+
+        catch (err) {
+
+            console.error("Resume parse error:", err);
+            resumeStatus.textContent = "Failed to parse resume.";
+
+        }
 
     });
 
